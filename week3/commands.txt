@@ -1,0 +1,11 @@
+fastapi dev app.py
+
+docker build -t docker-app .
+
+docker run -d --name docker-app -p 80:80 docker-app
+
+docker image ls
+
+docker tag docker-app name/docker-app:tag
+
+docker push name/docker-app:tag
