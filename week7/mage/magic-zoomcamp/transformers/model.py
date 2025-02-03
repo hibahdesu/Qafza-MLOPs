@@ -1,12 +1,17 @@
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
 import pandas as pd
 from pandas import DataFrame
 import joblib
 
-
-
+if 'transformer' not in globals():
+    from mage_ai.data_preparation.decorators import transformer
 
 @transformer
 def train_model(df: DataFrame, **kwargs) -> pd.DataFrame:
@@ -35,25 +40,49 @@ def train_model(df: DataFrame, **kwargs) -> pd.DataFrame:
     # Train-test split
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Initialize and train the model
-    model = RandomForestClassifier()
-    model.fit(X_train, y_train)
+    # Initialize and train multiple models
+    models = {
+        'RandomForest': RandomForestClassifier(),
+        'LogisticRegression': LogisticRegression(max_iter=1000),
+        'SVC': SVC(),
+        'KNeighbors': KNeighborsClassifier()
+    }
 
-    # Evaluate the model
-    y_pred = model.predict(X_test)
-    accuracy = accuracy_score(y_test, y_pred)
+    best_accuracy = 0
+    best_model = None
+    best_model_name = ""
 
-    # Debugging: Print accuracy
-    print(f"Model Accuracy: {accuracy:.4f}")
+    # Iterate through each model and evaluate performance using a pipeline
+    for model_name, model in models.items():
+        print(f"\nTraining {model_name} with pipeline...")
 
-    joblib.dump(model, 'titanic_model.pkl')
+        # Create a pipeline that first scales data and then applies the model
+        pipeline = Pipeline([
+            ('scaler', StandardScaler()),  # Feature scaling
+            ('classifier', model)          # Model training
+        ])
 
-    
+        # Train the model
+        pipeline.fit(X_train, y_train)
+
+        # Evaluate the model
+        y_pred = pipeline.predict(X_test)
+        accuracy = accuracy_score(y_test, y_pred)
+
+        print(f"{model_name} Accuracy: {accuracy:.4f}")
+
+        # Save the best model
+        if accuracy > best_accuracy:
+            best_accuracy = accuracy
+            best_model = pipeline
+            best_model_name = model_name
+
+    print(f"\nBest Model: {best_model_name} with accuracy: {best_accuracy:.4f}")
+
+    # Save the best model to a file
+    model_filename = 'best_titanic_model_with_pipeline.pkl'
+    joblib.dump(best_model, model_filename)
+    print(f"Saving model of type: {type(best_model)} to {model_filename}")
 
     # Return the trained model
-    return model
-
-
-
-
-
+    return best_model

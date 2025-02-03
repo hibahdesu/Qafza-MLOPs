@@ -10,8 +10,12 @@ def export_model_to_file(model, **kwargs) -> None:
 import pickle
 
 # Save model using pickle
-with open('titanic_model.pkl', 'wb') as model_file:
+with open('titanic_model2.pkl', 'wb') as model_file:
     pickle.dump(model, model_file)
+
+print(f"Saving model of type: {type(model)}")
+model = joblib.load('titanic_model.pkl', mmap_mode='r')
+
 
     
 # def titanic_pipeline():
