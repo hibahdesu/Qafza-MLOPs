@@ -1,0 +1,14 @@
+python -m venv titanic_env
+
+
+titanic_env\Scripts\activate
+
+
+pip freeze > requirements.txt
+
+
+pip install -r requirements.txt
+
+
+
+streamlit run streamlit_app.py
