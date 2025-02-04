@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Titanic Survival Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stastyles.css') }}">
+
+</head>
+<body>
+    <div class="container">
+        <h1>Titanic Survival Prediction</h1>
+        <p>Enter the passenger information below to predict if they would survive the Titanic disaster.</p>
+
+        <!-- Input Form -->
+        <form id="predictionForm">
+            <label for="age">Age:</label>
+            <input type="number" id="age" name="age" required><br><br>
+
+            <label for="fare">Fare:</label>
+            <input type="number" id="fare" name="fare" required><br><br>
+
+            <label for="parch">Number of Parents/Children aboard:</label>
+            <input type="number" id="parch" name="parch" required><br><br>
+
+            <label for="pclass">Passenger Class:</label>
+            <select id="pclass" name="pclass" required>
+                <option value="1">1st Class</option>
+                <option value="2">2nd Class</option>
+                <option value="3">3rd Class</option>
+            </select><br><br>
+
+            <label for="sibsp">Number of Siblings/Spouses aboard:</label>
+            <input type="number" id="sibsp" name="sibsp" required><br><br>
+
+            <button type="button" onclick="getPrediction()">Predict Survival</button>
+        </form>
+
+        <!-- Result -->
+        <div id="result" style="display: none;">
+            <h2>Prediction Result:</h2>
+            <p id="predictionMessage"></p>
+        </div>
+    </div>
+
+    <script>
+        // Function to send data to Flask and get prediction
+        function getPrediction() {
+            const age = document.getElementById('age').value;
+            const fare = document.getElementById('fare').value;
+            const parch = document.getElementById('parch').value;
+            const pclass = document.getElementById('pclass').value;
+            const sibsp = document.getElementById('sibsp').value;
+
+            const data = {
+                "Age": age,
+                "Fare": fare,
+                "Parch": parch,
+                "Pclass": pclass,
+                "SibSp": sibsp
+            };
+
+            // Make POST request to Flask API
+            fetch('http://127.0.0.1:5000/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Show prediction result
+                document.getElementById('result').style.display = 'block';
+                document.getElementById('predictionMessage').innerText = data.prediction;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
